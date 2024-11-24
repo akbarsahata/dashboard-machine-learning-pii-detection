@@ -1,52 +1,39 @@
 import 'server-only';
 
-import { neon } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-http';
-import {
-  pgTable,
-  text,
-  numeric,
-  integer,
-  timestamp,
-  pgEnum,
-  serial
-} from 'drizzle-orm/pg-core';
-import { count, eq, ilike } from 'drizzle-orm';
-import { createInsertSchema } from 'drizzle-zod';
+import { MongoClient, ObjectId } from 'mongodb';
 
-export const db = drizzle(neon(process.env.POSTGRES_URL!));
+const client = new MongoClient(process.env.MONGO_URI!);
+const db = client.db('logs');
+const productsCollection = db.collection('detection_results');
 
-export const statusEnum = pgEnum('status', ['active', 'inactive', 'archived']);
-
-export const products = pgTable('products', {
-  id: serial('id').primaryKey(),
-  imageUrl: text('image_url').notNull(),
-  name: text('name').notNull(),
-  status: statusEnum('status').notNull(),
-  price: numeric('price', { precision: 10, scale: 2 }).notNull(),
-  stock: integer('stock').notNull(),
-  availableAt: timestamp('available_at').notNull()
-});
-
-export type SelectProduct = typeof products.$inferSelect;
-export const insertProductSchema = createInsertSchema(products);
+export type SelectProduct = {
+  model: string;
+  endpoint: string;
+  authorization: boolean;
+  predict: number;
+  severity: string;
+  response: string; // Ensure response is a string
+};
 
 export async function getProducts(
   search: string,
   offset: number
 ): Promise<{
-  products: SelectProduct[];
+  products: any[];
   newOffset: number | null;
   totalProducts: number;
 }> {
-  // Always search the full table, not per page
   if (search) {
+    const products = await productsCollection
+      .find({ name: { $regex: search, $options: 'i' } })
+      .limit(1000)
+      .toArray();
     return {
-      products: await db
-        .select()
-        .from(products)
-        .where(ilike(products.name, `%${search}%`))
-        .limit(1000),
+      products: products.map(product => ({
+        endpoint: product.endpoint,
+        severity: product.severity,
+        response: JSON.stringify(product.response) // Convert response to string
+      })),
       newOffset: null,
       totalProducts: 0
     };
@@ -56,17 +43,25 @@ export async function getProducts(
     return { products: [], newOffset: null, totalProducts: 0 };
   }
 
-  let totalProducts = await db.select({ count: count() }).from(products);
-  let moreProducts = await db.select().from(products).limit(5).offset(offset);
-  let newOffset = moreProducts.length >= 5 ? offset + 5 : null;
+  const totalProducts = await productsCollection.countDocuments();
+  const moreProducts = await productsCollection
+    .find()
+    .skip(offset)
+    .limit(5)
+    .toArray();
+  const newOffset = moreProducts.length >= 5 ? offset + 5 : null;
 
   return {
-    products: moreProducts,
+    products: moreProducts.map(product => ({
+      endpoint: product.endpoint,
+        severity: product.severity,
+      response: JSON.stringify(product.response) // Convert response to string
+    })),
     newOffset,
-    totalProducts: totalProducts[0].count
+    totalProducts
   };
 }
 
-export async function deleteProductById(id: number) {
-  await db.delete(products).where(eq(products.id, id));
+export async function deleteProductById(id: string) {
+  await productsCollection.deleteOne({ _id: new ObjectId(id) });
 }
