@@ -18,7 +18,8 @@ export default async function ProductsPage(
   );
 
   return (
-    <Tabs defaultValue="all">
+    <div className='max-w-screen-2xl mx-auto p-6'>
+      <Tabs defaultValue="all">
       <div className="flex items-center">
         <TabsList>
           <TabsTrigger value="all">All</TabsTrigger>
@@ -35,5 +36,6 @@ export default async function ProductsPage(
         />
       </TabsContent>
     </Tabs>
+    </div>
   );
 }

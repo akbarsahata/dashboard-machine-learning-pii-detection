@@ -28,6 +28,8 @@ export async function getProducts(
       .find({ name: { $regex: search, $options: 'i' } })
       .limit(1000)
       .toArray();
+
+     
     return {
       products: products.map(product => ({
         endpoint: product.endpoint,

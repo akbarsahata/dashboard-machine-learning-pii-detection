@@ -5,7 +5,8 @@ import {
   TableRow,
   TableHeader,
   TableBody,
-  Table
+  Table,
+  TableCell
 } from '@/components/ui/table';
 import {
   Card,
@@ -15,11 +16,12 @@ import {
   CardHeader,
   CardTitle
 } from '@/components/ui/card';
-import { Product } from './product';
 import { SelectProduct } from '@/lib/db';
 import { useRouter } from 'next/navigation';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { SearchInput } from './search';
 
 export function ProductsTable({
   products,
@@ -30,8 +32,8 @@ export function ProductsTable({
   offset: number;
   totalProducts: number;
 }) {
-  let router = useRouter();
-  let productsPerPage = 5;
+  const router = useRouter();
+  const productsPerPage = 5;
 
   function prevPage() {
     router.back();
@@ -42,7 +44,7 @@ export function ProductsTable({
   }
 
   return (
-    <Card>
+    <Card className='mx-auto max-w-screen-2xl'>
       <CardHeader>
         <CardTitle>Dashboard Monitoring Response API</CardTitle>
         <CardDescription>
@@ -50,6 +52,9 @@ export function ProductsTable({
         </CardDescription>
       </CardHeader>
       <CardContent>
+        <div className='flex flex-row-reverse'>
+        <SearchInput />
+        </div>
         <Table>
           <TableHeader>
             <TableRow>
@@ -60,7 +65,17 @@ export function ProductsTable({
           </TableHeader>
           <TableBody>
             {products.map((product) => (
-              <Product key={product.endpoint} product={product} />
+              <TableRow>
+              <TableCell className="font-medium">{product.endpoint}</TableCell>
+              <TableCell>
+                <Badge variant="outline" className="capitalize">
+                  {product.severity}
+                </Badge>
+              </TableCell>
+              <TableCell>
+                {product.response}
+              </TableCell>
+              </TableRow>
             ))}
           </TableBody>
         </Table>
