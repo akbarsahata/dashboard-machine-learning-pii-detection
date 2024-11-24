@@ -44,9 +44,9 @@ export function ProductsTable({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Products</CardTitle>
+        <CardTitle>Dashboard Monitoring Response API</CardTitle>
         <CardDescription>
-          Manage your products and view their sales performance.
+          Manage your API in this dashboard.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -72,7 +72,7 @@ export function ProductsTable({
             <strong>
               {Math.max(0, Math.min(offset - productsPerPage, totalProducts) + 1)}-{offset}
             </strong>{' '}
-            of <strong>{totalProducts}</strong> products
+            of <strong>{totalProducts}</strong> API
           </div>
           <div className="flex">
             <Button
