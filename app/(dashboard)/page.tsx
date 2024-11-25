@@ -1,9 +1,7 @@
+import { ResponseTab } from "@/components/responses-tab/response-tab";
+import { SearchInput } from "@/components/search";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getDetectionResults } from "@/lib/db";
-import { AllResponseTab } from "@/components/responses-tab/all-responses-tab";
-import { WarningResponseTab } from "@/components/responses-tab/warning-responses-tab";
-import { CriticalResponseTab } from "@/components/responses-tab/critical-responses-tab";
-import { PassResponseTab } from "@/components/responses-tab/pass-responses-tab";
 
 export default async function DashboardPage(props: {
   searchParams: Promise<{ q: string; offset: string; tab: string }>;
@@ -19,41 +17,49 @@ export default async function DashboardPage(props: {
   );
 
   return (
-    <div className="flex flex-col max-w-screen-2xl mx-auto p-6">
-      <div>
-        <h1>Dashboard Monitoring Response API</h1>
-        <span>Manage your API in this dashboard.</span>
+    <div className="flex flex-col max-w-screen-xl min-w-[1280px] mx-auto p-6">
+      <div className="flex flex-col gap-2 py-4 align-center justify-start">
+        <h1 className="text-2xl font-extrabold">
+          Dashboard Monitoring Response API
+        </h1>
+        <span className="text-muted-foreground">
+          Manage your API in this dashboard.
+        </span>
       </div>
       <Tabs defaultValue={tab}>
-        <TabsList>
-          <TabsTrigger value="all">All</TabsTrigger>
-          <TabsTrigger value="warning">Warning</TabsTrigger>
-          <TabsTrigger value="critical">Critical</TabsTrigger>
-          <TabsTrigger value="pass">Pass</TabsTrigger>
-        </TabsList>
+        <div className="flex justify-between">
+          <TabsList>
+            <TabsTrigger value="all">All</TabsTrigger>
+            <TabsTrigger value="warning">Warning</TabsTrigger>
+            <TabsTrigger value="critical">Critical</TabsTrigger>
+            <TabsTrigger value="pass">Pass</TabsTrigger>
+          </TabsList>
+          <SearchInput />
+        </div>
+
         <TabsContent value="all">
-          <AllResponseTab
+          <ResponseTab
             results={results}
             offset={newOffset ?? 5}
             totalResults={totalResults}
           />
         </TabsContent>
         <TabsContent value="warning">
-          <WarningResponseTab
+          <ResponseTab
             results={results.filter((r) => r.severity === "Warning")}
             offset={newOffset ?? 5}
             totalResults={totalResults}
           />
         </TabsContent>
         <TabsContent value="critical">
-          <CriticalResponseTab
+          <ResponseTab
             results={results.filter((r) => r.severity === "Critical")}
             offset={newOffset ?? 5}
             totalResults={totalResults}
           />
         </TabsContent>
         <TabsContent value="pass">
-          <PassResponseTab
+          <ResponseTab
             results={results.filter((r) => r.severity === "Pass")}
             offset={newOffset ?? 5}
             totalResults={totalResults}

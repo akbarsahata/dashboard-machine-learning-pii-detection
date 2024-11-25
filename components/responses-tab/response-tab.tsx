@@ -1,23 +1,14 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableHeader } from "@/components/ui/table";
 import { DetectionResult } from "@/lib/db";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { SearchInput } from "../search";
-import { match } from "ts-pattern";
+import { ResponseHeader, ResponseRow } from "./table-rows";
 
-export function AllResponseTab({
+export function ResponseTab({
   results,
   offset,
   totalResults,
@@ -40,46 +31,17 @@ export function AllResponseTab({
   return (
     <Card className="mx-auto max-w-screen-2xl">
       <CardContent>
-        <div className="flex flex-row-reverse">
-          <SearchInput />
-        </div>
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead>Endpoint</TableHead>
-              <TableHead>Severity</TableHead>
-              <TableHead>Response</TableHead>
-            </TableRow>
+            <ResponseHeader />
           </TableHeader>
           <TableBody>
             {results.map((r) => (
-              <TableRow key={r.endpoint}>
-                <TableCell className="font-medium">{r.endpoint}</TableCell>
-                <TableCell>
-                  {match(r.severity)
-                    .with("Pass", () => (
-                      <Badge
-                        variant="outline"
-                        className="bg-green-500 hover:bg-green-500/80 text-white"
-                      >
-                        Pass
-                      </Badge>
-                    ))
-                    .with("Warning", () => (
-                      <Badge
-                        variant="secondary"
-                        className="bg-yellow-500 hover:bg-yellow-500/80 text-white"
-                      >
-                        Warning
-                      </Badge>
-                    ))
-                    .with("Critical", () => (
-                      <Badge variant="destructive">Critical</Badge>
-                    ))
-                    .exhaustive()}
-                </TableCell>
-                <TableCell>{r.response}</TableCell>
-              </TableRow>
+              <ResponseRow
+                endpoint={r.endpoint}
+                severity={r.severity}
+                id={r.id}
+              />
             ))}
           </TableBody>
         </Table>

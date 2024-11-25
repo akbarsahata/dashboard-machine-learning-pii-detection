@@ -8,6 +8,7 @@ const db = client.db("logs");
 const detectionResultsCollection = db.collection("detection_results");
 
 export const detectionResultSchema = z.object({
+  id: z.string(),
   model: z.enum(["svm", "naive_bayes"]),
   endpoint: z.string(),
   authorization: z.boolean(),
@@ -29,11 +30,11 @@ export async function getDetectionResults(
   if (search) {
     const [results, totalResults] = await Promise.all([
       detectionResultsCollection
-        .find({ name: { $regex: search, $options: "i" } })
+        .find({ endpoint: { $regex: search, $options: "i" } })
         .limit(1000)
         .toArray(),
       detectionResultsCollection.countDocuments({
-        name: { $regex: search, $options: "i" },
+        endpoint: { $regex: search, $options: "i" },
       }),
     ]);
 
@@ -43,6 +44,7 @@ export async function getDetectionResults(
       results: results.map((r) =>
         detectionResultSchema.parse({
           ...r,
+          id: r._id.toString(),
           response: JSON.stringify(r.response),
         }),
       ),
@@ -68,6 +70,7 @@ export async function getDetectionResults(
     results: results.map((r) =>
       detectionResultSchema.parse({
         ...r,
+        id: r._id.toString(),
         response: JSON.stringify(r.response),
       }),
     ),
@@ -85,6 +88,7 @@ export async function getDetectionResultById(id: string): Promise<DetectionResul
 
   return detectionResultSchema.parse({
     ...result,
-    response: JSON.stringify(result.response),
+    id: result._id.toString(),
+    response: JSON.stringify(result.response, null, 2),
   });
 }
