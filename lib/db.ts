@@ -1,12 +1,12 @@
-import 'server-only';
+import "server-only";
 
-import { MongoClient, ObjectId } from 'mongodb';
+import { MongoClient } from "mongodb";
 
 const client = new MongoClient(process.env.MONGO_URI!);
-const db = client.db('logs');
-const productsCollection = db.collection('detection_results');
+const db = client.db("logs");
+const detectionResultsCollection = db.collection("detection_results");
 
-export type SelectProduct = {
+export type DetectionResult = {
   model: string;
   endpoint: string;
   authorization: boolean;
@@ -15,55 +15,56 @@ export type SelectProduct = {
   response: string; // Ensure response is a string
 };
 
-export async function getProducts(
+export async function getDetectionResults(
   search: string,
-  offset: number
+  offset: number,
 ): Promise<{
-  products: any[];
+  results: any[];
   newOffset: number | null;
-  totalProducts: number;
+  totalResults: number;
 }> {
   if (search) {
-    const products = await productsCollection
-      .find({ name: { $regex: search, $options: 'i' } })
-      .limit(1000)
-      .toArray();
+    const [results, totalResults] = await Promise.all([
+      detectionResultsCollection
+        .find({ name: { $regex: search, $options: "i" } })
+        .limit(1000)
+        .toArray(),
+      detectionResultsCollection.countDocuments({
+        name: { $regex: search, $options: "i" },
+      }),
+    ]);
 
-     
     return {
-      products: products.map(product => ({
+      results: results.map((product) => ({
         endpoint: product.endpoint,
         severity: product.severity,
-        response: JSON.stringify(product.response) // Convert response to string
+        response: JSON.stringify(product.response),
       })),
       newOffset: null,
-      totalProducts: 0
+      totalResults,
     };
   }
 
   if (offset === null) {
-    return { products: [], newOffset: null, totalProducts: 0 };
+    return { results: [], newOffset: null, totalResults: 0 };
   }
 
-  const totalProducts = await productsCollection.countDocuments();
-  const moreProducts = await productsCollection
+  const totalProducts = await detectionResultsCollection.countDocuments();
+  const moreProducts = await detectionResultsCollection
     .find()
     .skip(offset)
     .limit(5)
     .toArray();
+    
   const newOffset = moreProducts.length >= 5 ? offset + 5 : null;
 
   return {
-    products: moreProducts.map(product => ({
+    results: moreProducts.map((product) => ({
       endpoint: product.endpoint,
-        severity: product.severity,
-      response: JSON.stringify(product.response) // Convert response to string
+      severity: product.severity,
+      response: JSON.stringify(product.response),
     })),
     newOffset,
-    totalProducts
+    totalResults: totalProducts,
   };
-}
-
-export async function deleteProductById(id: string) {
-  await productsCollection.deleteOne({ _id: new ObjectId(id) });
 }

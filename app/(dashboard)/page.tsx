@@ -1,41 +1,40 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { File, PlusCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { ProductsTable } from './products-table';
-import { getProducts } from '@/lib/db';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { getDetectionResults } from "@/lib/db";
+import { AllResponseTab } from "./all-responses-tab";
 
-export default async function ProductsPage(
-  props: {
-    searchParams: Promise<{ q: string; offset: string }>;
-  }
-) {
+export default async function ProductsPage(props: {
+  searchParams: Promise<{ q: string; offset: string }>;
+}) {
   const searchParams = await props.searchParams;
-  const search = searchParams.q ?? '';
+  const search = searchParams.q ?? "";
   const offset = searchParams.offset ?? 0;
-  const { products, newOffset, totalProducts } = await getProducts(
-    search,
-    Number(offset)
-  );
+  const {
+    results: products,
+    newOffset,
+    totalResults: totalProducts,
+  } = await getDetectionResults(search, Number(offset));
 
   return (
-    <div className='max-w-screen-2xl mx-auto p-6'>
+    <div className="flex flex-col max-w-screen-2xl mx-auto p-6">
+      <div>
+        <h1>Dashboard Monitoring Response API</h1>
+        <span>Manage your API in this dashboard.</span>
+      </div>
       <Tabs defaultValue="all">
-      <div className="flex items-center">
         <TabsList>
           <TabsTrigger value="all">All</TabsTrigger>
           <TabsTrigger value="warning">Warning</TabsTrigger>
           <TabsTrigger value="critical">Critical</TabsTrigger>
           <TabsTrigger value="pass">Pass</TabsTrigger>
         </TabsList>
-      </div>
-      <TabsContent value="all">
-        <ProductsTable
-          products={products}
-          offset={newOffset ?? 0}
-          totalProducts={totalProducts}
-        />
-      </TabsContent>
-    </Tabs>
+        <TabsContent value="all">
+          <AllResponseTab
+            results={products}
+            offset={newOffset ?? 5}
+            totalResults={totalProducts}
+          />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

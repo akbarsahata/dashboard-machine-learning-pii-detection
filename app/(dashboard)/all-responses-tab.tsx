@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   TableHead,
@@ -6,31 +6,31 @@ import {
   TableHeader,
   TableBody,
   Table,
-  TableCell
-} from '@/components/ui/table';
+  TableCell,
+} from "@/components/ui/table";
 import {
   Card,
   CardContent,
   CardDescription,
   CardFooter,
   CardHeader,
-  CardTitle
-} from '@/components/ui/card';
-import { SelectProduct } from '@/lib/db';
-import { useRouter } from 'next/navigation';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { SearchInput } from './search';
+  CardTitle,
+} from "@/components/ui/card";
+import { DetectionResult } from "@/lib/db";
+import { useRouter } from "next/navigation";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { SearchInput } from "./search";
 
-export function ProductsTable({
-  products,
+export function AllResponseTab({
+  results,
   offset,
-  totalProducts
+  totalResults,
 }: {
-  products: SelectProduct[];
+  results: DetectionResult[];
   offset: number;
-  totalProducts: number;
+  totalResults: number;
 }) {
   const router = useRouter();
   const productsPerPage = 5;
@@ -44,16 +44,10 @@ export function ProductsTable({
   }
 
   return (
-    <Card className='mx-auto max-w-screen-2xl'>
-      <CardHeader>
-        <CardTitle>Dashboard Monitoring Response API</CardTitle>
-        <CardDescription>
-          Manage your API in this dashboard.
-        </CardDescription>
-      </CardHeader>
+    <Card className="mx-auto max-w-screen-2xl">
       <CardContent>
-        <div className='flex flex-row-reverse'>
-        <SearchInput />
+        <div className="flex flex-row-reverse">
+          <SearchInput />
         </div>
         <Table>
           <TableHeader>
@@ -64,17 +58,17 @@ export function ProductsTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {products.map((product) => (
+            {results.map((product) => (
               <TableRow>
-              <TableCell className="font-medium">{product.endpoint}</TableCell>
-              <TableCell>
-                <Badge variant="outline" className="capitalize">
-                  {product.severity}
-                </Badge>
-              </TableCell>
-              <TableCell>
-                {product.response}
-              </TableCell>
+                <TableCell className="font-medium">
+                  {product.endpoint}
+                </TableCell>
+                <TableCell>
+                  <Badge variant="outline" className="capitalize">
+                    {product.severity}
+                  </Badge>
+                </TableCell>
+                <TableCell>{product.response}</TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -83,11 +77,15 @@ export function ProductsTable({
       <CardFooter>
         <form className="flex items-center w-full justify-between">
           <div className="text-xs text-muted-foreground">
-            Showing{' '}
+            Showing{" "}
             <strong>
-              {Math.max(0, Math.min(offset - productsPerPage, totalProducts) + 1)}-{offset}
-            </strong>{' '}
-            of <strong>{totalProducts}</strong> API
+              {Math.max(
+                0,
+                Math.min(offset - productsPerPage, totalResults) + 1,
+              )}
+              -{offset}
+            </strong>{" "}
+            of <strong>{totalResults}</strong> API
           </div>
           <div className="flex">
             <Button
@@ -105,7 +103,7 @@ export function ProductsTable({
               variant="ghost"
               size="sm"
               type="submit"
-              disabled={offset + productsPerPage > totalProducts}
+              disabled={offset + productsPerPage > totalResults}
             >
               Next
               <ChevronRight className="ml-2 h-4 w-4" />
