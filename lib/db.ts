@@ -1,6 +1,6 @@
 import "server-only";
 
-import { MongoClient } from "mongodb";
+import { MongoClient, ObjectId } from "mongodb";
 import { z } from "zod";
 
 const client = new MongoClient(process.env.MONGO_URI!);
@@ -74,4 +74,17 @@ export async function getDetectionResults(
     newOffset,
     totalResults,
   };
+}
+
+export async function getDetectionResultById(id: string): Promise<DetectionResult> {
+  const result = await detectionResultsCollection.findOne({ _id: new ObjectId(id) });
+
+  if (!result) {
+    throw new Error("Detection result not found");
+  }
+
+  return detectionResultSchema.parse({
+    ...result,
+    response: JSON.stringify(result.response),
+  });
 }
