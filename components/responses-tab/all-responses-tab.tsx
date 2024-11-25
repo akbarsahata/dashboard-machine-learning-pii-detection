@@ -1,27 +1,21 @@
 "use client";
 
-import {
-  TableHead,
-  TableRow,
-  TableHeader,
-  TableBody,
-  Table,
-  TableCell,
-} from "@/components/ui/table";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { DetectionResult } from "@/lib/db";
-import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { SearchInput } from "./search";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { DetectionResult } from "@/lib/db";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { SearchInput } from "../search";
+import { match } from "ts-pattern";
 
 export function AllResponseTab({
   results,
@@ -33,7 +27,7 @@ export function AllResponseTab({
   totalResults: number;
 }) {
   const router = useRouter();
-  const productsPerPage = 5;
+  const resultsPerPage = 5;
 
   function prevPage() {
     router.back();
@@ -58,17 +52,33 @@ export function AllResponseTab({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {results.map((product) => (
-              <TableRow>
-                <TableCell className="font-medium">
-                  {product.endpoint}
-                </TableCell>
+            {results.map((r) => (
+              <TableRow key={r.endpoint}>
+                <TableCell className="font-medium">{r.endpoint}</TableCell>
                 <TableCell>
-                  <Badge variant="outline" className="capitalize">
-                    {product.severity}
-                  </Badge>
+                  {match(r.severity)
+                    .with("Pass", () => (
+                      <Badge
+                        variant="outline"
+                        className="bg-green-500 hover:bg-green-500/80 text-white"
+                      >
+                        Pass
+                      </Badge>
+                    ))
+                    .with("Warning", () => (
+                      <Badge
+                        variant="secondary"
+                        className="bg-yellow-500 hover:bg-yellow-500/80 text-white"
+                      >
+                        Warning
+                      </Badge>
+                    ))
+                    .with("Critical", () => (
+                      <Badge variant="destructive">Critical</Badge>
+                    ))
+                    .exhaustive()}
                 </TableCell>
-                <TableCell>{product.response}</TableCell>
+                <TableCell>{r.response}</TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -79,10 +89,7 @@ export function AllResponseTab({
           <div className="text-xs text-muted-foreground">
             Showing{" "}
             <strong>
-              {Math.max(
-                0,
-                Math.min(offset - productsPerPage, totalResults) + 1,
-              )}
+              {Math.max(0, Math.min(offset - resultsPerPage, totalResults) + 1)}
               -{offset}
             </strong>{" "}
             of <strong>{totalResults}</strong> API
@@ -93,7 +100,7 @@ export function AllResponseTab({
               variant="ghost"
               size="sm"
               type="submit"
-              disabled={offset === productsPerPage}
+              disabled={offset === resultsPerPage}
             >
               <ChevronLeft className="mr-2 h-4 w-4" />
               Prev
@@ -103,7 +110,7 @@ export function AllResponseTab({
               variant="ghost"
               size="sm"
               type="submit"
-              disabled={offset + productsPerPage > totalResults}
+              disabled={offset + resultsPerPage > totalResults}
             >
               Next
               <ChevronRight className="ml-2 h-4 w-4" />

@@ -4,7 +4,9 @@ import { cookies } from "next/headers";
 
 export async function canAccessPrelaunched() {
   const cookieStore = await cookies();
-  const savedPin = cookieStore.get(process.env.PRE_LAUNCH_KEY || "prelaunch")?.value;
+  const savedPin = cookieStore.get(
+    process.env.PRE_LAUNCH_KEY || "prelaunch",
+  )?.value;
   return savedPin === process.env.PRE_LAUNCH_PASSWORD;
 }
 

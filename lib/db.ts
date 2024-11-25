@@ -1,25 +1,28 @@
 import "server-only";
 
 import { MongoClient } from "mongodb";
+import { z } from "zod";
 
 const client = new MongoClient(process.env.MONGO_URI!);
 const db = client.db("logs");
 const detectionResultsCollection = db.collection("detection_results");
 
-export type DetectionResult = {
-  model: string;
-  endpoint: string;
-  authorization: boolean;
-  predict: number;
-  severity: string;
-  response: string; // Ensure response is a string
-};
+export const detectionResultSchema = z.object({
+  model: z.enum(["svm", "naive_bayes"]),
+  endpoint: z.string(),
+  authorization: z.boolean(),
+  predict: z.number(),
+  severity: z.enum(["Pass", "Warning", "Critical"]),
+  response: z.string(),
+});
+
+export type DetectionResult = z.infer<typeof detectionResultSchema>;
 
 export async function getDetectionResults(
   search: string,
   offset: number,
 ): Promise<{
-  results: any[];
+  results: DetectionResult[];
   newOffset: number | null;
   totalResults: number;
 }> {
@@ -34,12 +37,15 @@ export async function getDetectionResults(
       }),
     ]);
 
+    console.log("getDetectionResults", results, totalResults);
+
     return {
-      results: results.map((product) => ({
-        endpoint: product.endpoint,
-        severity: product.severity,
-        response: JSON.stringify(product.response),
-      })),
+      results: results.map((r) =>
+        detectionResultSchema.parse({
+          ...r,
+          response: JSON.stringify(r.response),
+        }),
+      ),
       newOffset: null,
       totalResults,
     };
@@ -49,22 +55,23 @@ export async function getDetectionResults(
     return { results: [], newOffset: null, totalResults: 0 };
   }
 
-  const totalProducts = await detectionResultsCollection.countDocuments();
-  const moreProducts = await detectionResultsCollection
-    .find()
-    .skip(offset)
-    .limit(5)
-    .toArray();
-    
-  const newOffset = moreProducts.length >= 5 ? offset + 5 : null;
+  const [results, totalResults] = await Promise.all([
+    detectionResultsCollection.find().skip(offset).limit(5).toArray(),
+    detectionResultsCollection.countDocuments(),
+  ]);
+
+  console.log("getDetectionResults", results, totalResults);
+
+  const newOffset = results.length >= 5 ? offset + 5 : null;
 
   return {
-    results: moreProducts.map((product) => ({
-      endpoint: product.endpoint,
-      severity: product.severity,
-      response: JSON.stringify(product.response),
-    })),
+    results: results.map((r) =>
+      detectionResultSchema.parse({
+        ...r,
+        response: JSON.stringify(r.response),
+      }),
+    ),
     newOffset,
-    totalResults: totalProducts,
+    totalResults,
   };
 }

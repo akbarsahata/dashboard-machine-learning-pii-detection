@@ -4,15 +4,29 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { verifyPrelaunchedCode } from "./actions";
 import { toast } from "sonner";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
 import { Button } from "@/components/ui/button";
 const FormSchema = z.object({
   pin: z.string().min(6, {
     message: "Your password must be 6 characters.",
   }),
 });
-export function PrelaunchedGateForm({ isAllowed, children }: PreLaunchGateFormProps) {
+export function PrelaunchedGateForm({
+  isAllowed,
+  children,
+}: PreLaunchGateFormProps) {
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
@@ -33,7 +47,10 @@ export function PrelaunchedGateForm({ isAllowed, children }: PreLaunchGateFormPr
     return (
       <main className="mx-auto mt-20 w-fit">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="w-2/3 space-y-6">
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="w-2/3 space-y-6"
+          >
             <FormField
               control={form.control}
               name="pin"

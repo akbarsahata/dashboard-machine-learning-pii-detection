@@ -1,15 +1,15 @@
-import './globals.css';
+import "./globals.css";
 
-import { Analytics } from '@vercel/analytics/react';
+import { Analytics } from "@vercel/analytics/react";
 
 export const metadata = {
-  title: 'Dashboard Monitoring Response API',
+  title: "Dashboard Monitoring Response API",
   description:
-    'Detect and monitor your API response in real-time. Get notified when your API is leaking sensitive data.',
+    "Detect and monitor your API response in real-time. Get notified when your API is leaking sensitive data.",
 };
 
 export default function RootLayout({
-  children
+  children,
 }: {
   children: React.ReactNode;
 }) {
